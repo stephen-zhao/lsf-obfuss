@@ -1,0 +1,141 @@
+#include <iostream>
+#include <vector>
+
+#define y y_axis();
+#define _ blankspace();
+#define x x_axis();
+#define o point();
+
+struct PointInfo
+{
+    int x_value; int y_value;
+};
+
+int global_curr_x_raw = 1;
+int global_curr_y_raw = -1;
+int point_count = 0;
+std::vector<PointInfo *> points;
+bool has_processed = 0;
+
+float sum(std::vector<float> arr)
+{
+    int total = 0;
+    for (auto i: arr)
+    {
+        total += i;
+    }
+    return total;
+}
+
+void compute_least_squares()
+{
+    if (point_count == 0)
+    {
+        std::cout << "no points yo" << std::endl;
+        return;
+    }
+    else if (point_count == 1)
+    {
+        std::cout << "uh. line of best fit from one point. I actually have no idea how" << std::endl;
+        return;
+    }
+
+    std::vector<float> allx;
+    std::vector<float> ally;
+    for (auto pt: points)
+    {
+        allx.emplace_back(pt->x_value);
+        ally.emplace_back(pt->y_value);
+    }
+
+    float xbar = sum(allx) / point_count;
+    float ybar = sum(ally) / point_count;
+
+    std::vector<float> xy_variationparts;
+    std::vector<float> xx_variationparts;
+    
+    for (int i = 0; i < point_count; ++i)
+    {
+        xy_variationparts.emplace_back((allx[i] - xbar)*(ally[i] - ybar));
+        xx_variationparts.emplace_back((allx[i] - xbar)*(allx[i] - xbar));
+    }
+
+    float s_xy = sum(xy_variationparts);
+    float s_xx = sum(xx_variationparts);
+    
+    if (s_xx == 0)
+    {
+        std::cout << "nice try; no, I don't do vertical lines" << std::endl;
+        return;
+    }
+
+    float beta = s_xy / s_xx;
+    float alpha = ybar - beta * xbar;
+
+    std::cout << "y = " << alpha << " + " << beta << " * x" << std::endl;
+    return;
+}
+
+void y_axis()
+{
+    --global_curr_y_raw;
+    global_curr_x_raw = -1;
+}
+
+void blankspace()
+{
+    ++global_curr_x_raw;
+}
+
+void point()
+{
+    ++global_curr_x_raw;
+    PointInfo * new_point = new PointInfo{global_curr_x_raw, global_curr_y_raw};
+    points.emplace_back(new_point);
+    ++point_count;
+}
+
+void x_axis()
+{
+    if (has_processed)
+    {
+        points.clear();
+        return;
+    }
+    has_processed = 1;
+    int total_y = -global_curr_y_raw;
+    for (auto pt: points)
+    {
+        pt->y_value += total_y;
+        std::cout << "point: " << pt->x_value << "," << pt->y_value << std::endl;
+    }
+
+    compute_least_squares();
+}
+
+int main()
+{
+
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ o _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ o _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ o _ _ o _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ o _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ o _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ o o _ _ _ o _ o _ o _ _ _ _ _
+y _ _ _ _ _ _ o _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ o _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ o _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ o _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ o _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ o _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+y _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+  x x x x x x x x x x x x x x x x x x x x x
+
+}
